@@ -126,6 +126,11 @@ func (e *Event) PostStartID(input InputPostStartID) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
 	}
 
+	client.Model(entity.Application{}).Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Updates(map[string]interface{}{
+		"status": "participant",
+	},
+	)
+
 	now := lib.Now()
 	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
 	client.Model(event).Updates(map[string]interface{}{
@@ -152,6 +157,11 @@ func (e *Event) PostCompleteID(input InputPostCompleteID) error {
 	if event.Leader != input.Id {
 		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
 	}
+
+	client.Model(entity.Application{}).Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Updates(map[string]interface{}{
+		"status": "participant",
+	},
+	)
 
 	now := lib.Now()
 	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
