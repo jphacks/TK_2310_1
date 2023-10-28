@@ -64,7 +64,7 @@ type InputSearch struct {
 }
 
 type OutSearch struct {
-	Events []entity.Event
+	Events []entity.Event `json:"events"`
 }
 
 func (e *Event) Search(ctx context.Context, input InputSearch) (*OutSearch, error) {
