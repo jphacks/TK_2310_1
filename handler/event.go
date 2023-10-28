@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 	"errors"
-	"github.com/giraffe-org/backend/api/gen"
-	"github.com/giraffe-org/backend/entity"
-	FirebaseInfrastructure "github.com/giraffe-org/backend/infrastructure/firebase"
-	"github.com/giraffe-org/backend/lib"
-	DBRepository "github.com/giraffe-org/backend/repository/db"
-	"github.com/giraffe-org/backend/service"
+	"github.com/jphacks/TK_2310_1/api/gen"
+	"github.com/jphacks/TK_2310_1/entity"
+	FirebaseInfrastructure "github.com/jphacks/TK_2310_1/infrastructure/firebase"
+	"github.com/jphacks/TK_2310_1/lib"
+	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
+	"github.com/jphacks/TK_2310_1/service"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"log"
@@ -23,6 +23,7 @@ type IFEventHandler interface {
 	GetSearch(c echo.Context) error
 	PostStartID(c echo.Context) error
 	PostCompleteID(c echo.Context) error
+	GetEventIDParticipant(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -251,4 +252,33 @@ func (e *EventHandler) PostCompleteID(c echo.Context) error {
 		return err
 	}
 	return c.NoContent(http.StatusOK)
+}
+func (e *EventHandler) GetEventIDParticipant(c echo.Context) error {
+	eventID := c.Param("id")
+	var participants []entity.Participant
+
+	if err := e.db.GetDB().Where("event_id = ? AND status = 'not_completed'", eventID).Find(&participants).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": "Failed to fetch participants",
+		})
+	}
+
+	type participantResponse struct {
+		UserID string `json:"user_id"`
+		Status string `json:"status"`
+	}
+	respParticipants := []participantResponse{}
+	for _, p := range participants {
+		respParticipants = append(respParticipants, participantResponse{
+			UserID: p.UserID,
+			Status: string(p.Status),
+		})
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Participants []participantResponse `json:"participants"`
+	}{
+		Participants: respParticipants,
+	})
+
 }
