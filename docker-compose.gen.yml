@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  bottlist_gen:
+    container_name: bottlist_gen
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile.gen
+    tty: true
+    volumes:
+      - .:/app:delegated
+

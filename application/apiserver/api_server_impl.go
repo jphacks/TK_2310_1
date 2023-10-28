@@ -1,0 +1,45 @@
+package apiserver
+
+import (
+	"github.com/giraffe-org/backend/handler"
+	"github.com/giraffe-org/backend/handler/auth/signup"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+)
+
+type apiServerImpl struct {
+	e                 *echo.Echo
+	authSignupHandler signup.Signup
+	eventHandler      handler.IFEventHandler
+}
+
+func New(eventhandler handler.IFEventHandler) ApiServer {
+	return &apiServerImpl{
+		e:                 echo.New(),
+		authSignupHandler: signup.New(),
+		eventHandler:      eventhandler,
+	}
+}
+
+func (a *apiServerImpl) Start() {
+	// Middleware
+	a.e.Use(middleware.Logger())
+	a.e.Use(middleware.Recover())
+
+	// Routes
+	a.e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "healthy")
+	})
+
+	a.e.POST("/auth/signup", a.authSignupHandler.Post)
+	a.e.GET("/event/:id", a.eventHandler.GetEventID)
+	a.e.GET("/event/schedule", a.eventHandler.GetEventSchedule)
+
+	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
+	a.e.GET("/event/search", a.eventHandler.GetSearch)
+
+	// Start server
+	a.e.Logger.Fatal(a.e.Start(":8080"))
+}

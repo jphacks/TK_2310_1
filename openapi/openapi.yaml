@@ -1,0 +1,896 @@
+openapi: 3.0.0
+info:
+  title: バックエンド API
+  version: 1.0.0
+  description: |
+    バックエンドの API です。
+paths:
+  /auth/signup:
+    post:
+      summary: ユーザのサインアップ
+      description: |
+        このAPIはユーザのサインアップをサポートします。
+        認証時にはFirebaseのIDトークンの確認と取り消し検出を行います。
+        ユーザをサインアップさせ、その情報を返します。この処理は以下のステップを含む:
+        1. Firebase Admin SDKを使ってIDトークンを確認する。
+        2. SDKでIDトークンの取り消しを検出する。
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company_id:
+                  type: string
+                  nullable: true
+                  description: 会社のID。未設定の場合はundefined。
+                display_name:
+                  type: string
+                  description: 表示名
+                icon_url:
+                  type: string
+                  nullable: true
+                  description: アイコンのURL。未設定の場合はundefined。
+      responses:
+        200:
+          description: サインアップ成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  company_id:
+                    type: string
+                    nullable: true
+                    description: 会社のID。未設定の場合はundefined。
+                  user_name:
+                    type: string
+                    description: ユーザ名
+                  display_name:
+                    type: string
+                    description: 表示名
+                  icon_url:
+                    type: string
+                    nullable: true
+                    description: アイコンのURL。未設定の場合はundefined。
+      security:
+        - BearerToken: [ ]
+
+  /achievement-rate:
+    get:
+      summary: ゴミ拾いの達成率取得
+      description: |
+        月によってのユーザのゴミ拾いの達成率を計算して返します。
+      responses:
+        200:
+          description: 達成率の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  garbage_collection_rate:
+                    type: number
+      security:
+        - BearerToken: [ ]
+
+  /event/recommendation:
+    get:
+      summary: イベントのおすすめ
+      description: |
+        ユーザの位置情報や過去のイベント参加情報に基づいておすすめのイベントを提供します。
+      parameters:
+        - name: latitude
+          in: query
+          description: ユーザの緯度
+          required: false
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          description: ユーザの経度
+          required: false
+          schema:
+            type: number
+            format: float
+        - name: limit
+          in: query
+          description: 取得するイベントの数の制限
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 10
+            default: 10
+        - name: offset
+          in: query
+          description: 取得するイベントのオフセット
+          required: false
+          schema:
+            type: number
+      responses:
+        200:
+          description: イベントのおすすめ取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+      security:
+        - BearerToken: [ ]
+
+  /event/schedule:
+    get:
+      summary: ユーザの参加予定イベントの取得
+      description: |
+        ユーザが参加予定のイベントを直近順に取得します。
+      parameters:
+      responses:
+        200:
+          description: 参加予定のイベント取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+      security:
+        - BearerToken: [ ]
+
+  /event/search:
+    get:
+      summary: イベント検索
+      description: |
+        指定した条件に基づいてイベントを検索します。
+      parameters:
+        - name: address
+          in: query
+          description: イベントの開催地
+          required: false
+          schema:
+            type: string
+        - name: host_company_name
+          in: query
+          description: イベントの主催会社名
+          required: false
+          schema:
+              type: string
+        - name: min_unit_price
+          in: query
+          description: イベントの単価の下限
+          required: false
+          schema:
+            type: number
+        - name: will_start_at
+          in: query
+          description: イベントの開始日時の下限
+          required: false
+          schema:
+              type: string
+              format: date-time
+        - name: is_not_full_house
+          in: query
+          description: イベントの定員に空きがあるかどうか
+          required: false
+          schema:
+              type: boolean
+        - name: limit
+          in: query
+          description: 取得するイベントの数の制限
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 10
+            default: 10
+        - name: offset
+          in: query
+          description: 取得するイベントのオフセット
+          required: false
+          schema:
+            type: number
+      responses:
+        200:
+          description: イベント検索成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+      security:
+        - BearerToken: [ ]
+
+  /event/order-recommendation:
+    get:
+      summary: おすすめイベントの順番提案
+      description: |
+        1日に複数のイベントを回る際の、おすすめのイベント参加順の提案をします。
+      parameters:
+        - name: address
+          in: query
+          description: イベントの開催地
+          required: false
+          schema:
+            type: string
+        - name: start_at
+          in: query
+          description: イベントの開始日時の下限
+          required: false
+          schema:
+              type: string
+              format: date-time
+        - name: complete_at
+          in: query
+          description: イベントの終了日時の上限
+          required: false
+          schema:
+              type: string
+              format: date-time
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: おすすめイベント順提案成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+      security:
+        - BearerToken: [ ]
+
+  /event/{id}:
+    get:
+      summary: イベント詳細取得
+      description: |
+        指定したIDのイベント詳細を取得します。
+      parameters:
+        - name: id
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: イベント詳細取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/EventDetail'
+      security:
+        - BearerToken: [ ]
+
+  /event/{id}/participant:
+    get:
+      summary: イベント参加者一覧取得
+      description: |
+        指定したIDのイベントの参加者一覧を取得します。
+      parameters:
+        - name: id
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: イベント参加者一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
+      security:
+        - BearerToken: [ ]
+
+  /event/participation-history:
+    get:
+      summary: 参加履歴の取得
+      description: |
+        ユーザの参加履歴を取得します。
+      parameters:
+        - name: limit
+          in: query
+          description: 取得する履歴の最大数
+          required: false
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: 取得を開始する履歴のオフセット
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: 参加履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ParticipationHistory'
+      security:
+        - BearerToken: [ ]
+
+  /user/{id}:
+    get:
+      summary: ユーザ情報の取得
+      description: |
+        指定されたIDのユーザ情報を取得します。
+      parameters:
+        - name: id
+          in: path
+          description: ユーザID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ユーザ情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      security:
+        - BearerToken: [ ]
+
+  /event/{id}/start:
+    post:
+      summary: イベント開始
+      description: |
+        指定されたIDのイベントを開始します。
+      parameters:
+        - name: id
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: イベント開始成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventStartResponse'
+      security:
+        - BearerToken: [ ]
+
+  /event/{id}/complete:
+    post:
+      summary: イベント完了
+      description: |
+        指定されたIDのイベントを完了します。
+      parameters:
+        - name: id
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCompleteRequest'
+      responses:
+        200:
+          description: イベント完了成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventCompleteResponse'
+      security:
+        - BearerToken: [ ]
+
+  /event/{id}/report:
+    post:
+      summary: イベント報告
+      description: |
+        指定されたIDのイベントに対する報告をします。
+      parameters:
+        - name: id
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventReportRequest'
+      responses:
+        200:
+          description: イベント報告成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventReportResponse'
+        400:
+          description: 報告失敗（位置情報が不正な場合等）
+      security:
+        - BearerToken: [ ]
+
+  /user/{id}/event:
+    get:
+      summary: ユーザが主催するイベント一覧取得
+      description: |
+        指定されたIDのユーザが主催しているイベントの一覧を取得します。
+      parameters:
+        - name: id
+          in: path
+          description: ユーザID
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 取得する最大イベント数
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: オフセット（何番目からのイベントを取得するか）
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: イベント一覧取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserHostedEventsResponse'
+        403:
+          description: このエンドポイントへのアクセス権がないユーザ（例：company_idがundefinedのユーザ）
+      security:
+        - BearerToken: [ ]
+
+  /user/{userId}/event/{eventId}:
+    get:
+      summary: ユーザが主催する特定のイベントの詳細情報取得
+      description: |
+        指定されたIDのユーザが主催している特定のイベントの詳細情報を取得します。
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザID
+          required: true
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: イベント詳細情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetailedInfo'
+        404:
+          description: 該当するイベントが見つからない場合
+      security:
+        - BearerToken: [ ]
+
+    patch:
+      summary: イベント情報編集
+      description: |
+        ユーザが主催するイベントの情報を編集するエンドポイント。
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザID
+          required: true
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          description: イベントID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditEvent'
+      responses:
+        200:
+          description: イベント情報編集成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditEventResponse'
+        403:
+          description: 会社に所属していないユーザがアクセスした場合
+      security:
+        - BearerToken: [ ]
+
+  /user/{userId}/event:
+    post:
+      summary: 新規イベント作成
+      description: |
+        ユーザが新規にイベントを主催するためのエンドポイント。
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewEvent'
+      responses:
+        201:
+          description: イベント作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewEventResponse'
+        403:
+          description: 会社に所属していないユーザがアクセスした場合
+      security:
+        - BearerToken: [ ]
+
+components:
+  securitySchemes:
+    BearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: "id_token"
+
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        host_company_name:
+          type: string
+        address:
+          type: string
+        participant_count:
+          type: number
+        unit_price:
+          type: number
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        application_deadline:
+          type: string
+          format: date-time
+
+    EventDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        host_company_name:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        participant_count:
+          type: number
+        unit_price:
+          type: number
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        application_deadline:
+          type: string
+          format: date-time
+        leader_name:
+          type: string
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Participant:
+      type: object
+      properties:
+        user_id:
+          type: string
+        user_name:
+          type: string
+        status:
+          type: string
+
+    ParticipationHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        host_company_name:
+          type: string
+        address:
+          type: string
+        participant_count:
+          type: number
+        unit_price:
+          type: number
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - completed
+            - not_reported
+            - absent
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        company_id:
+          type: string
+          nullable: true
+        user_name:
+          type: string
+        display_name:
+          type: string
+        sex:
+          type: string
+        age:
+          type: number
+        icon_url:
+          type: string
+
+    EventStartResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+
+    EventCompleteRequest:
+      type: object
+      properties:
+        completed_at:
+          type: string
+          format: date-time
+        proof_participants_image_url:
+          type: string
+        proof_garbage_image_url:
+          type: string
+        report:
+          type: string
+
+    EventCompleteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        proof_participants_image_url:
+          type: string
+        proof_garbage_image_url:
+          type: string
+        report:
+          type: string
+
+    EventReportRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+
+    EventReportResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+
+    UserHostedEventsResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserHostedEventDetail'
+
+    UserHostedEventDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        host_company_name:
+          type: string
+        address:
+          type: string
+        participant_count:
+          type: integer
+        unit_price:
+          type: integer
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        application_deadline:
+          type: string
+          format: date-time
+        leader_name:
+          type: string
+          nullable: true
+
+    EventDetailedInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        participant_count:
+          type: integer
+        unit_price:
+          type: integer
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        application_deadline:
+          type: string
+          format: date-time
+        leader:
+          type: string
+          nullable: true
+
+    NewEvent:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        participant_count:
+          type: integer
+        unit_price:
+          type: integer
+        will_start_at:
+          type: string
+          format: date-time
+        will_complete_at:
+          type: string
+          format: date-time
+        application_deadline:
+          type: string
+          format: date-time
+    NewEventResponse:
+      allOf:
+        - $ref: '#/components/schemas/NewEvent'
+        - type: object
+          properties:
+            id:
+              type: string
+    EditEvent:
+      allOf:
+        - $ref: '#/components/schemas/NewEvent'
+        - type: object
+          properties:
+            leader:
+              type: string
+              nullable: true
+    EditEventResponse:
+      allOf:
+        - $ref: '#/components/schemas/EditEvent'
