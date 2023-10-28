@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -24,6 +25,7 @@ type IFEventHandler interface {
 	PostStartID(c echo.Context) error
 	PostCompleteID(c echo.Context) error
 	GetEventIDParticipant(c echo.Context) error
+	GetEventRecommendation(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -166,6 +168,7 @@ func (e *EventHandler) GetSearch(c echo.Context) error {
 }
 
 func (e *EventHandler) PostStartID(c echo.Context) error {
+
 	ctx := context.Background()
 	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
 	authClient, err := firebaseApp.Auth(ctx)
@@ -252,6 +255,7 @@ func (e *EventHandler) PostCompleteID(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 func (e *EventHandler) GetEventIDParticipant(c echo.Context) error {
+
 	eventID := c.Param("id")
 	var participants []entity.Participant
 
@@ -279,4 +283,24 @@ func (e *EventHandler) GetEventIDParticipant(c echo.Context) error {
 		Participants: respParticipants,
 	})
 
+}
+
+func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
+
+	var events []entity.Event
+	var count int64
+	e.db.GetDB().Model(&entity.Event{}).Count(&count)
+
+	// ランダムなオフセットを取得
+	offset := rand.Intn(int(count) - 4) // -4 ensures there's always room for 5 items
+
+	// ランダムなオフセットで5件のレコードを取得
+	err := e.db.GetDB().Limit(5).Offset(offset).Find(&events).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, events)
 }
