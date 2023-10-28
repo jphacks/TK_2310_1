@@ -1,8 +1,8 @@
 package apiserver
 
 import (
-	"github.com/giraffe-org/backend/handler"
-	"github.com/giraffe-org/backend/handler/auth/signup"
+	"github.com/jphacks/TK_2310_1/handler"
+	"github.com/jphacks/TK_2310_1/handler/auth/signup"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -35,6 +35,7 @@ func (a *apiServerImpl) Start() {
 
 	a.e.POST("/auth/signup", a.authSignupHandler.Post)
 	a.e.GET("/event/:id", a.eventHandler.GetEventID)
+	a.e.GET("/event/:id/participant", a.eventHandler.GetEventIDParticipant)
 	a.e.GET("/event/schedule", a.eventHandler.GetEventSchedule)
 
 	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
