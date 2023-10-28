@@ -52,6 +52,7 @@ func (a *apiServerImpl) Start() {
 	a.e.POST("/event/:id/application", a.eventHandler.PostEventIDApplication)
 
 	auth.GET("/user", a.userHandler.GetUserID)
+	auth.POST("/user/:id/event", a.userHandler.PostUsrIDEvent)
 
 	// Start server
 	a.e.Logger.Fatal(a.e.Start(":8080"))
