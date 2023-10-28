@@ -45,10 +45,11 @@ func (a *apiServerImpl) Start() {
 
 	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
 	a.e.GET("/event/search", a.eventHandler.GetSearch)
+	a.e.GET("/event/recommendation", a.eventHandler.GetEventRecommendation)
 	a.e.POST("/event/:id/start", a.eventHandler.PostStartID)
 	a.e.POST("/event/:id/complete", a.eventHandler.PostCompleteID)
 	a.e.POST("/event/:id/report", a.eventHandler.PostReportID)
-	a.e.GET("/event/recommendation", a.eventHandler.GetEventRecommendation)
+	a.e.POST("/event/:id/application", a.eventHandler.PostEventIDApplication)
 
 	auth.GET("/user", a.userHandler.GetUserID)
 

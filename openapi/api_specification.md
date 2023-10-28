@@ -314,6 +314,61 @@ status には次の3つの文字列のどれかが入ります。
 - not_reported（報告がまだ完了していない。）
 - absent（欠席）
 
+## 応募
+
+### POST /event/:id/application
+
+#### リクエスト
+
+ヘッダ
+
+```
+Authorization: Barer "id_token"
+```
+
+#### レスポンス
+
+ ```json
+{
+  "id": "string",
+  "user_id": "string",
+  "event_id": "string",
+  "status": "string",
+  "created_at": "Date",
+  "updated_at": "Date"
+}
+ ```
+
+## 応募履歴
+
+### GET /event/:id/application
+
+#### リクエスト
+
+ヘッダ
+
+```
+Authorization: Barer "id_token"
+```
+
+#### レスポンス
+
+```json
+{
+  "applications": [
+    {
+      "id": "string",
+      "user_id": "string",
+      "event_id": "string",
+      "status": "string",
+      "created_at": "Date",
+      "updated_at": "Date"
+    },
+    ...
+  ]
+}
+```
+
 ## 参加履歴
 
 ### GET /event/participation-history?limit="number"&offset="number"
@@ -357,7 +412,7 @@ status には次の3つの文字列のどれかが入ります。
 
 ## アカウント設定
 
-### GET /user/:id
+### GET /user
 
 #### リクエスト
 
