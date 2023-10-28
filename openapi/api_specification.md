@@ -35,7 +35,8 @@ Authorization: Barer "id_token"
 
 #### 備考
 
-login 用のエンドポイントは必要ない。login を「id トークンを発行する処理」とするなら、この「id トークンを発行する処理」は Firebase 側でやってくれるから。
+login 用のエンドポイントは必要ない。login を「id トークンを発行する処理」とするなら、この「id トークンを発行する処理」は
+Firebase 側でやってくれるから。
 
 uid をフロントから送る必要はなさそう。uid を verify する関数の戻り値で uid を取得できるため。
 https://github.com/firebase/firebase-admin-go/blob/master/auth/auth.go#L259
@@ -44,12 +45,13 @@ https://github.com/firebase/firebase-admin-go/blob/master/auth/auth.go#L259
 ユーザ登録時はセキュリティを高めたいため。
 
 1. Firebase Admin SDK を使用して ID トークンを確認する
-https://firebase.google.com/docs/auth/admin/verify-id-tokens?hl=ja#verify_id_tokens_using_the_firebase_admin_sdk
+   https://firebase.google.com/docs/auth/admin/verify-id-tokens?hl=ja#verify_id_tokens_using_the_firebase_admin_sdk
 
 2. SDK で ID トークンの取り消しを検出する
-https://firebase.google.com/docs/auth/admin/manage-sessions?hl=ja#detect_id_token_revocation_in_the_sdk
+   https://firebase.google.com/docs/auth/admin/manage-sessions?hl=ja#detect_id_token_revocation_in_the_sdk
 
-signup 以外の任意のエンドポイントを叩く時はトークンの有効性を確認するだけ、つまり「Firebase Admin SDK を使用して ID トークンを確認する」処理しか行わないことにする。
+signup 以外の任意のエンドポイントを叩く時はトークンの有効性を確認するだけ、つまり「Firebase Admin SDK を使用して ID
+トークンを確認する」処理しか行わないことにする。
 
 ## ホーム
 
@@ -75,9 +77,11 @@ Authorization: Barer "id_token"
 
 トップページだと仮定
 
-サーバの現在の日時を持ってきて、現在の月を算出する。10月だった場合、10月のイベント参加履歴を db から持ってくる。参加履歴からそのユーザがその月に何時間ゴミ拾いをしたかを求められる。
+サーバの現在の日時を持ってきて、現在の月を算出する。10月だった場合、10月のイベント参加履歴を db
+から持ってくる。参加履歴からそのユーザがその月に何時間ゴミ拾いをしたかを求められる。
 
 参考:
+
 - https://www.asahi.com/articles/ASLDV5WRQLDVPLBJ00D.html
 - https://www3.nhk.or.jp/news/html/20230902/k10014182011000.html
 
@@ -87,7 +91,6 @@ Authorization: Barer "id_token"
 1時間あたりにとれるゴミの量とその月に何時間ゴミ拾いしたかをかけることでユーザがその月にどれくらいゴミを拾ったかを算出できる。
 
 1ヶ月あたりに最大に拾えるゴミの量を算出する。これを使って割合を算出する。
-
 
 ### GET /event/recommendation?latitude="number"&longitude="number"&limit="number"&offset="number"
 
@@ -168,7 +171,7 @@ Authorization: Barer "id_token"
 
 ## 検索
 
-### GET /event/search?keyword="string"&min_unit_price="number"&will_start_at="Date"&is_not_full_house="boolean"&limit="number"&offset="number"
+### GET /event/search?keyword="string"&min_unit_price="number"&will_start_at="Date"&limit="number"&offset="number"
 
 #### リクエスト
 
@@ -242,7 +245,8 @@ Authorization: Barer "id_token"
 1日に複数のイベントを回る際の、おすすめのイベント参加順の提案をする機能です。
 参照: https://www.notion.so/d53b9d98864a4629aac88f65c77df930
 
-start_at と complete_at で指定した時間の間に開催されているイベントで、interval_minute で指定した分数の間隔でイベントを回るときのおすすめのイベント参加順を配列で返します。
+start_at と complete_at で指定した時間の間に開催されているイベントで、interval_minute
+で指定した分数の間隔でイベントを回るときのおすすめのイベント参加順を配列で返します。
 
 ## イベント詳細
 
@@ -295,7 +299,6 @@ Authorization: Barer "id_token"
   "participants": [
     {
       "user_id": "string",
-      "user_name": "string",
       "status": "string"
     },
     ...
@@ -350,7 +353,7 @@ status には次の3つの文字列のどれかが入ります。
 
 - completed（イベントに参加し、報告も完了している）
 - not_reported（報告がまだ完了していない。）
-- absent（欠席） 
+- absent（欠席）
 
 ## アカウント設定
 
@@ -422,7 +425,6 @@ Authorization: Barer "id_token"
 
 ```json
 {
-  "completed_at": "Date",
   "proof_participants_image_url": "string",
   "proof_garbage_image_url": "string",
   "report": "string"
@@ -445,7 +447,8 @@ Authorization: Barer "id_token"
 #### 備考
 
 そのイベントのリーダのみが叩けるイベントを完了するエンドポイントです。
-proof_participants_image_url は参加者の写真を撮った画像のオブジェクト URL です。proof_garbage_image_url は拾ったゴミの写真を撮った画像のオブジェクト URL です。
+proof_participants_image_url は参加者の写真を撮った画像のオブジェクト URL です。proof_garbage_image_url
+は拾ったゴミの写真を撮った画像のオブジェクト URL です。
 report にはそのイベントの様子などを書いてもらいます。態度の悪い人や欠席者等もこの report に書いてもらいます。
 
 ### POST /event/:id/report
@@ -484,7 +487,7 @@ Authorization: Barer "id_token"
 
 ### GET /user/:id/event?limit="number"&offset="number"
 
-####　リクエスト
+#### リクエスト
 
 ヘッダ
 
