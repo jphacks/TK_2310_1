@@ -8,6 +8,7 @@ import (
 	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/xerrors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -46,7 +47,15 @@ func (e *Event) OrderRecommendation(ctx context.Context, input InputOrderRecomme
 	client := e.db.GetDB()
 	var event []entity.Event
 	address := "%" + input.Address + "%"
+	log.Println(input.StartAt)
 	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", input.StartAt, input.EndAt).Find(&event)
+	if len(event) == 0 {
+		return OutOrderRecommendation{
+			Events:   event,
+			SumPrice: 0,
+		}
+	}
+	log.Println(event)
 	maxPrice, events := algo.Optimalplan(event)
 	result := OutOrderRecommendation{
 		Events:   events,
