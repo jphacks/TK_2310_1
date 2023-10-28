@@ -229,9 +229,9 @@ func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
 }
 
 func (e *EventHandler) GetEventParticipationHistory(c echo.Context) error {
-	userID := "2nO3pQ4r5S6t7U8v9W0x1Y2z3A4B"
+	userId := c.Get("userId").(string)
 	var participations []entity.Participant
-	if err := e.db.GetDB().Where("user_id = ?", userID).Find(&participations).Error; err != nil {
+	if err := e.db.GetDB().Where("user_id = ?", userId).Find(&participations).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
 		})
