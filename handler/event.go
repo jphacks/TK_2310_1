@@ -23,6 +23,7 @@ type IFEventHandler interface {
 	GetSearch(c echo.Context) error
 	PostStartID(c echo.Context) error
 	PostCompleteID(c echo.Context) error
+	PostReportID(c echo.Context) error
 	GetEventIDParticipant(c echo.Context) error
 }
 
@@ -203,7 +204,6 @@ func (e *EventHandler) PostStartID(c echo.Context) error {
 }
 
 func (e *EventHandler) PostCompleteID(c echo.Context) error {
-
 	ctx := context.Background()
 	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
 	authClient, err := firebaseApp.Auth(ctx)
@@ -251,6 +251,45 @@ func (e *EventHandler) PostCompleteID(c echo.Context) error {
 	}
 	return c.NoContent(http.StatusOK)
 }
+
+func (e *EventHandler) PostReportID(c echo.Context) error {
+
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	intput := service.InputPostStartID{
+		Id:      token.UID,
+		EventID: eventID,
+	}
+	err = e.eventService.PostReportID(intput)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
+}
+
 func (e *EventHandler) GetEventIDParticipant(c echo.Context) error {
 	eventID := c.Param("id")
 	var participants []entity.Participant
