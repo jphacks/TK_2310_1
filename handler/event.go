@@ -23,6 +23,7 @@ type IFEventHandler interface {
 	PostReportID(c echo.Context) error
 	GetEventIDParticipant(c echo.Context) error
 	GetEventRecommendation(c echo.Context) error
+	GetEventParticipationHistory(c echo.Context) error
 	GetEventIDApplication(c echo.Context) error
 	PostEventIDApplication(c echo.Context) error
 	GetUserIDEvent(c echo.Context) error
@@ -225,6 +226,31 @@ func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, events)
+}
+
+func (e *EventHandler) GetEventParticipationHistory(c echo.Context) error {
+	userID := "2nO3pQ4r5S6t7U8v9W0x1Y2z3A4B"
+	var participations []entity.Participant
+	if err := e.db.GetDB().Where("user_id = ?", userID).Find(&participations).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
+	events := []entity.Event{}
+	//var events []entity.Event
+	for _, participation := range participations {
+		var event entity.Event
+		if err := e.db.GetDB().Where("id = ?", participation.EventID).First(&event).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{
+				"message": err.Error(),
+			})
+		}
+		events = append(events, event)
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"events": events,
+	})
 }
 
 func (e *EventHandler) GetEventIDApplication(c echo.Context) error {
