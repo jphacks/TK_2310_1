@@ -28,11 +28,19 @@ func initService(c *dig.Container) error {
 	if err != nil {
 		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
 	}
+	err = c.Provide(service.NewUserService)
+	if err != nil {
+		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
+	}
 	return nil
 }
 
 func initHandler(c *dig.Container) error {
 	err := c.Provide(handler.NewEventHandler)
+	if err != nil {
+		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
+	}
+	err = c.Provide(handler.NewUserHandler)
 	if err != nil {
 		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
 	}
