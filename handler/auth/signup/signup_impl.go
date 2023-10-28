@@ -1,6 +1,6 @@
 package signup
 
-import DBRepository "github.com/giraffe-org/backend/repository/db"
+import DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 
 type signupImpl struct {
 	db DBRepository.DB

@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/giraffe-org/backend/algo"
-	"github.com/giraffe-org/backend/entity"
-	DBRepository "github.com/giraffe-org/backend/repository/db"
+	"github.com/jphacks/TK_2310_1/algo"
+	"github.com/jphacks/TK_2310_1/entity"
+	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/xerrors"
 	"net/http"

@@ -10,8 +10,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/giraffe-org/backend/config"
-	"github.com/giraffe-org/backend/entity"
+	"github.com/jphacks/TK_2310_1/config"
+	"github.com/jphacks/TK_2310_1/entity"
 )
 
 var db *gorm.DB

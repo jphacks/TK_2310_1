@@ -2,11 +2,11 @@
 
 ### エンドポイント
 
-prd: https://backend-prd-twmyiymqla-an.a.run.app
+prd: https://jphacks-backend-prd-twmyiymqla-an.a.run.app
 
-stg: https://backend-stg-twmyiymqla-an.a.run.app
+stg: https://jphacks-backend-stg-twmyiymqla-an.a.run.app
 
-dev1: https://backend-dev1-twmyiymqla-an.a.run.app
+dev1: https://jphacks-backend-dev1-twmyiymqla-an.a.run.app
 
 ##  データベースに接続する
 
