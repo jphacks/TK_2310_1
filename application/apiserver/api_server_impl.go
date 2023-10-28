@@ -31,6 +31,14 @@ func (a *apiServerImpl) Start() {
 	a.e.Use(middleware.Logger())
 	a.e.Use(middleware.Recover())
 
+	// CORSのミドルウェアを全許可の設定で追加
+	a.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+	}))
+
 	// Routes
 	a.e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "healthy")
