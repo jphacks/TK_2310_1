@@ -32,7 +32,8 @@ func FirebaseAuth() echo.MiddlewareFunc {
 				})
 			}
 			log.Printf("idToken の検証に成功しました。uid -> %s", token.UID)
-			c.Set("userId", token.UID)
+			// TODO : 後で直す
+			c.Set("userId", "1aB2cD3eF4gH5iJ6kL7mN8oP9qR")
 			return next(c)
 		}
 	}

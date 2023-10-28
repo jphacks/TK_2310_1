@@ -13,18 +13,19 @@ type IFUserHandler interface {
 
 func NewUserHandler(db DBRepository.DB, service service.IFUserService) IFUserHandler {
 	return &UserHandler{
-		db:           db,
-		eventService: service,
+		db:          db,
+		userService: service,
 	}
 }
 
 type UserHandler struct {
-	db           DBRepository.DB
-	eventService service.IFUserService
+	db          DBRepository.DB
+	userService service.IFUserService
 }
 
 func (u *UserHandler) GetUserID(c echo.Context) error {
 	userId := c.Get("userId").(string)
-	
-	return c.JSON(http.StatusOK, userId)
+	user := u.userService.GetUser(userId)
+
+	return c.JSON(http.StatusOK, user)
 }
