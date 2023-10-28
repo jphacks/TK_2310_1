@@ -19,3 +19,7 @@ func Now() time.Time {
 	now := time.Now().In(jst)
 	return now
 }
+
+func TimeToString(t time.Time) string {
+	return time.Time(t).Format("2006-01-02 15:04:05")
+}

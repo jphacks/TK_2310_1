@@ -18,6 +18,7 @@ type IFEventService interface {
 	GetUserEventSchedule(uid string) ([]entity.Event, error)
 	PostStartID(input InputPostStartID) error
 	PostCompleteID(input InputPostCompleteID) error
+	PostReportID(input InputPostStartID) error
 }
 
 type Event struct {
@@ -125,6 +126,11 @@ func (e *Event) PostStartID(input InputPostStartID) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
 	}
 
+	client.Model(entity.Application{}).Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Updates(map[string]interface{}{
+		"status": "participant",
+	},
+	)
+
 	now := lib.Now()
 	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
 	client.Model(event).Updates(map[string]interface{}{
@@ -152,6 +158,11 @@ func (e *Event) PostCompleteID(input InputPostCompleteID) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
 	}
 
+	client.Model(entity.Application{}).Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Updates(map[string]interface{}{
+		"status": "participant",
+	},
+	)
+
 	now := lib.Now()
 	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
 	client.Model(event).Updates(map[string]interface{}{
@@ -162,5 +173,19 @@ func (e *Event) PostCompleteID(input InputPostCompleteID) error {
 	},
 	)
 
+	return nil
+}
+
+func (e *Event) PostReportID(input InputPostStartID) error {
+	client := e.db.GetDB()
+	/*
+		var application entity.Application
+		log.Println("a")
+		client.Table("applications").Select("*").Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Find(&application)
+	*/
+	client.Model(entity.Application{}).Where("user_id = ? AND event_id = ?", input.Id, input.EventID).Updates(map[string]interface{}{
+		"status": "participant",
+	},
+	)
 	return nil
 }

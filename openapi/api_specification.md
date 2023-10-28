@@ -519,10 +519,7 @@ Authorization: Barer "id_token"
 ボディ
 
 ```json
-{
-  "latitude": "number",
-  "longitude": "number"
-}
+
 ```
 
 #### レスポンス
