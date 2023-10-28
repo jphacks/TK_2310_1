@@ -27,6 +27,7 @@ type IFEventHandler interface {
 	PostReportID(c echo.Context) error
 	GetEventIDParticipant(c echo.Context) error
 	GetEventRecommendation(c echo.Context) error
+	GetEventIDApplication(c echo.Context) error
 	PostEventIDApplication(c echo.Context) error
 }
 
@@ -343,6 +344,20 @@ func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, events)
+}
+
+func (e *EventHandler) GetEventIDApplication(c echo.Context) error {
+
+	eventID := c.Param("id")
+	var applications []entity.Application
+
+	if err := e.db.GetDB().Where("event_id = ?", eventID).Find(&applications).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": "Failed to fetch applications",
+		})
+	}
+
+	return c.JSON(http.StatusOK, applications)
 }
 
 func (e *EventHandler) PostEventIDApplication(c echo.Context) error {
