@@ -162,7 +162,7 @@ paths:
           description: イベントの主催会社名
           required: false
           schema:
-              type: string
+            type: string
         - name: min_unit_price
           in: query
           description: イベントの単価の下限
@@ -174,14 +174,8 @@ paths:
           description: イベントの開始日時の下限
           required: false
           schema:
-              type: string
-              format: date-time
-        - name: is_not_full_house
-          in: query
-          description: イベントの定員に空きがあるかどうか
-          required: false
-          schema:
-              type: boolean
+            type: string
+            format: date-time
         - name: limit
           in: query
           description: 取得するイベントの数の制限
@@ -229,15 +223,15 @@ paths:
           description: イベントの開始日時の下限
           required: false
           schema:
-              type: string
-              format: date-time
+            type: string
+            format: date-time
         - name: complete_at
           in: query
           description: イベントの終了日時の上限
           required: false
           schema:
-              type: string
-              format: date-time
+            type: string
+            format: date-time
       requestBody:
         content:
           application/json:
@@ -661,8 +655,6 @@ components:
       properties:
         user_id:
           type: string
-        user_name:
-          type: string
         status:
           type: string
 
@@ -727,9 +719,6 @@ components:
     EventCompleteRequest:
       type: object
       properties:
-        completed_at:
-          type: string
-          format: date-time
         proof_participants_image_url:
           type: string
         proof_garbage_image_url:
