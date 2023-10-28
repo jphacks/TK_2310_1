@@ -398,7 +398,8 @@ Authorization: Barer "id_token"
       "status": "string"
     },
     ...
-  ]
+  ],
+  "sum_price": "number" 
 }
 ```
 
