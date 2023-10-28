@@ -237,16 +237,18 @@ func (e *EventHandler) GetEventParticipationHistory(c echo.Context) error {
 		})
 	}
 
-	events := []entity.Event{}
-	//var events []entity.Event
+	// イベントIDのスライスを作成
+	var eventIDs []string
 	for _, participation := range participations {
-		var event entity.Event
-		if err := e.db.GetDB().Where("id = ?", participation.EventID).First(&event).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{
-				"message": err.Error(),
-			})
-		}
-		events = append(events, event)
+		eventIDs = append(eventIDs, participation.EventID)
+	}
+
+	// 一度のクエリで全てのイベントを取得
+	events := []entity.Event{}
+	if err := e.db.GetDB().Where("id IN (?)", eventIDs).Find(&events).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"events": events,
