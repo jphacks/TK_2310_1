@@ -38,8 +38,8 @@ type InputOrderRecommendation struct {
 }
 
 type OutOrderRecommendation struct {
-	Events   []entity.Event
-	SumPrice int
+	Events   []entity.Event `json:"events"`
+	SumPrice int            `json:"sum_price"`
 }
 
 func (e *Event) OrderRecommendation(ctx context.Context, input InputOrderRecommendation) OutOrderRecommendation {
