@@ -29,6 +29,7 @@ type IFEventHandler interface {
 	GetEventRecommendation(c echo.Context) error
 	GetEventIDApplication(c echo.Context) error
 	PostEventIDApplication(c echo.Context) error
+	GetUserIDEvent(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -407,4 +408,26 @@ func (e *EventHandler) PostEventIDApplication(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, application)
+}
+
+func (e *EventHandler) GetUserIDEvent(c echo.Context) error {
+	userID := c.Param("id")
+
+	var user entity.User
+	result := e.db.GetDB().First(&user, "id = ?", userID)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": result.Error.Error(),
+		})
+	}
+
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error"})
+	}
+
+	var events []entity.Event
+	e.db.GetDB().Where("host_company_id = ?", user.CompanyID).Find(&events)
+
+	return c.JSON(http.StatusOK, events)
 }
