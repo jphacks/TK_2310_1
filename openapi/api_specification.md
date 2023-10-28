@@ -577,37 +577,6 @@ Authorization: Barer "id_token"
 そのユーザが主催しているイベント一覧を取得するエンドポイントです。
 現時点では会社に所属しているユーザのみが主催できるようにしているため、company_id が undefined のユーザはこのエンドポイントを叩けません。
 
-## イベント詳細
-
-### GET /user/:id/event/:id
-
-#### リクエスト
-
-ヘッダ
-
-```
-Authorization: Barer "id_token"
-```
-
-#### レスポンス
-
-```json
-{
-  "id": "string",
-  "title": "string",
-  "description": "string",
-  "address": "string",
-  "latitude": "number",
-  "longitude": "number",
-  "participant_count": "number",
-  "unit_price": "number",
-  "will_start_at": "Date",
-  "will_complete_at": "Date",
-  "application_deadline": "Date",
-  "leader": "string | undefined"
-}
-```
-
 ## イベント作成、編集
 
 ### POST /user/:id/event
