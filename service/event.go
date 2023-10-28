@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jphacks/TK_2310_1/algo"
 	"github.com/jphacks/TK_2310_1/entity"
+	"github.com/jphacks/TK_2310_1/lib"
 	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/xerrors"
@@ -15,6 +16,8 @@ type IFEventService interface {
 	OrderRecommendation(ctx context.Context, input InputOrderRecommendation) OutOrderRecommendation
 	Search(ctx context.Context, input InputSearch) (*OutSearch, error)
 	GetUserEventSchedule(uid string) ([]entity.Event, error)
+	PostStartID(input InputPostStartID) error
+	PostCompleteID(input InputPostCompleteID) error
 }
 
 type Event struct {
@@ -106,4 +109,58 @@ func (e *Event) GetUserEventSchedule(uid string) ([]entity.Event, error) {
 	}
 
 	return upcomingEvents, nil
+}
+
+type InputPostStartID struct {
+	Id      string
+	EventID string
+}
+
+func (e *Event) PostStartID(input InputPostStartID) error {
+	client := e.db.GetDB()
+	var event entity.Event
+	client.Table("events").Select("*").Where("id = ?", input.EventID).Find(&event)
+
+	if event.Leader != input.Id {
+		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
+	}
+
+	now := lib.Now()
+	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
+	client.Model(event).Updates(map[string]interface{}{
+		"started_at": nowstr,
+	},
+	)
+
+	return nil
+}
+
+type InputPostCompleteID struct {
+	Id                        string
+	EventID                   string
+	ProofParticipantsImageUrl string
+	ProofGarbageImageUrl      string
+	Report                    string
+}
+
+func (e *Event) PostCompleteID(input InputPostCompleteID) error {
+	client := e.db.GetDB()
+	var event entity.Event
+	client.Table("events").Select("*").Where("id = ?", input.EventID).Find(&event)
+
+	if event.Leader != input.Id {
+		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
+	}
+
+	now := lib.Now()
+	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
+	client.Model(event).Updates(map[string]interface{}{
+		"completed_at":                 nowstr,
+		"proof_participants_image_url": input.ProofParticipantsImageUrl,
+		"proof_garbage_image_url":      input.ProofGarbageImageUrl,
+		"report":                       input.Report,
+	},
+	)
+
+	return nil
 }
