@@ -203,36 +203,34 @@ func (e *EventHandler) PostStartID(c echo.Context) error {
 }
 
 func (e *EventHandler) PostCompleteID(c echo.Context) error {
-	/*
-		ctx := context.Background()
-		firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
-		authClient, err := firebaseApp.Auth(ctx)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{
-				"message": err.Error(),
-			})
-		}
 
-		barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"message": err.Error(),
-			})
-		}
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
-		token, err := authClient.VerifyIDToken(ctx, barerToken)
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": err.Error(),
-			})
-		}
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
-		eventID := c.Param("id")
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
-	*/
+	eventID := c.Param("id")
 
 	var req gen.PostEventIdCompleteRequest
-	err := c.Bind(&req)
+	err = c.Bind(&req)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "requestのBindに失敗しました：", err)
 	}
@@ -241,8 +239,8 @@ func (e *EventHandler) PostCompleteID(c echo.Context) error {
 	}
 
 	input := service.InputPostCompleteID{
-		Id:                        "a",                            //token.UID,
-		EventID:                   "2bC3dE4fG5hI6jK7lM8nO9pQ0rSB", //eventID,
+		Id:                        token.UID,
+		EventID:                   eventID,
 		ProofParticipantsImageUrl: req.ProofParticipantsImageUrl,
 		ProofGarbageImageUrl:      req.ProofGarbageImageUrl,
 		Report:                    req.Report,

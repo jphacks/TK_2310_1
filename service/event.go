@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jphacks/TK_2310_1/algo"
 	"github.com/jphacks/TK_2310_1/entity"
+	"github.com/jphacks/TK_2310_1/lib"
 	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/xerrors"
@@ -147,11 +148,9 @@ func (e *Event) PostCompleteID(input InputPostCompleteID) error {
 	var event entity.Event
 	client.Table("events").Select("*").Where("id = ?", input.EventID).Find(&event)
 
-	/*
-		if event.Leader != input.Id {
-			return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
-		}
-	*/
+	if event.Leader != input.Id {
+		return echo.NewHTTPError(http.StatusBadRequest, "リーダーではありません")
+	}
 
 	now := lib.Now()
 	nowstr := time.Time(now).Format("2006-01-02 15:04:05")
