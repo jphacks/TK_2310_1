@@ -1,7 +1,7 @@
 package algo
 
 import (
-	"github.com/giraffe-org/backend/entity"
+	"github.com/jphacks/TK_2310_1/entity"
 	"sort"
 	"time"
 )

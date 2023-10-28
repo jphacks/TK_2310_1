@@ -3,14 +3,16 @@ package handler
 import (
 	"context"
 	"errors"
-	"github.com/giraffe-org/backend/entity"
-	FirebaseInfrastructure "github.com/giraffe-org/backend/infrastructure/firebase"
-	"github.com/giraffe-org/backend/lib"
-	DBRepository "github.com/giraffe-org/backend/repository/db"
-	"github.com/giraffe-org/backend/service"
+	"github.com/jphacks/TK_2310_1/api/gen"
+	"github.com/jphacks/TK_2310_1/entity"
+	FirebaseInfrastructure "github.com/jphacks/TK_2310_1/infrastructure/firebase"
+	"github.com/jphacks/TK_2310_1/lib"
+	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
+	"github.com/jphacks/TK_2310_1/service"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -20,6 +22,14 @@ type IFEventHandler interface {
 	GetEventSchedule(c echo.Context) error
 	GetEventID(c echo.Context) error
 	GetSearch(c echo.Context) error
+	PostStartID(c echo.Context) error
+	PostCompleteID(c echo.Context) error
+	PostReportID(c echo.Context) error
+	GetEventIDParticipant(c echo.Context) error
+	GetEventRecommendation(c echo.Context) error
+	GetEventIDApplication(c echo.Context) error
+	PostEventIDApplication(c echo.Context) error
+	GetUserIDEvent(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -159,4 +169,265 @@ func (e *EventHandler) GetSearch(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &events)
+}
+
+func (e *EventHandler) PostStartID(c echo.Context) error {
+
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	intput := service.InputPostStartID{
+		Id:      token.UID,
+		EventID: eventID,
+	}
+	err = e.eventService.PostStartID(intput)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (e *EventHandler) PostCompleteID(c echo.Context) error {
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	var req gen.PostEventIdCompleteRequest
+	err = c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "requestのBindに失敗しました：", err)
+	}
+	if err := req.Validate(); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "requestが不正です：", err)
+	}
+
+	input := service.InputPostCompleteID{
+		Id:                        token.UID,
+		EventID:                   eventID,
+		ProofParticipantsImageUrl: req.ProofParticipantsImageUrl,
+		ProofGarbageImageUrl:      req.ProofGarbageImageUrl,
+		Report:                    req.Report,
+	}
+	err = e.eventService.PostCompleteID(input)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (e *EventHandler) PostReportID(c echo.Context) error {
+
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	intput := service.InputPostStartID{
+		Id:      token.UID,
+		EventID: eventID,
+	}
+	err = e.eventService.PostReportID(intput)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (e *EventHandler) GetEventIDParticipant(c echo.Context) error {
+
+	eventID := c.Param("id")
+	var participants []entity.Participant
+
+	if err := e.db.GetDB().Where("event_id = ? AND status = 'not_completed'", eventID).Find(&participants).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": "Failed to fetch participants",
+		})
+	}
+
+	type participantResponse struct {
+		UserID string `json:"user_id"`
+		Status string `json:"status"`
+	}
+	respParticipants := []participantResponse{}
+	for _, p := range participants {
+		respParticipants = append(respParticipants, participantResponse{
+			UserID: p.UserID,
+			Status: string(p.Status),
+		})
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Participants []participantResponse `json:"participants"`
+	}{
+		Participants: respParticipants,
+	})
+
+}
+
+func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
+
+	var events []entity.Event
+	var count int64
+	e.db.GetDB().Model(&entity.Event{}).Count(&count)
+
+	// ランダムなオフセットを取得
+	offset := rand.Intn(int(count) - 4) // -4 ensures there's always room for 5 items
+
+	// ランダムなオフセットで5件のレコードを取得
+	err := e.db.GetDB().Limit(5).Offset(offset).Find(&events).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, events)
+}
+
+func (e *EventHandler) GetEventIDApplication(c echo.Context) error {
+
+	eventID := c.Param("id")
+	var applications []entity.Application
+
+	if err := e.db.GetDB().Where("event_id = ?", eventID).Find(&applications).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": "Failed to fetch applications",
+		})
+	}
+
+	return c.JSON(http.StatusOK, applications)
+}
+
+func (e *EventHandler) PostEventIDApplication(c echo.Context) error {
+
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	application := &entity.Application{
+		UserID:  token.UID,
+		EventID: eventID,
+		Status:  entity.ParticipantUser,
+	}
+
+	//application := &entity.Application{
+	//	UserID:  "aaa",
+	//	EventID: "bbb",
+	//	Status:  entity.ParticipantUser,
+	//}
+
+	err = e.db.GetDB().Create(application).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, application)
+}
+
+func (e *EventHandler) GetUserIDEvent(c echo.Context) error {
+	userID := c.Param("id")
+
+	var user entity.User
+	result := e.db.GetDB().First(&user, "id = ?", userID)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": result.Error.Error(),
+		})
+	}
+
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error"})
+	}
+
+	var events []entity.Event
+	e.db.GetDB().Where("host_company_id = ?", user.CompanyID).Find(&events)
+
+	return c.JSON(http.StatusOK, events)
 }

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/giraffe-org/backend/handler"
-	"github.com/giraffe-org/backend/handler/auth/signup"
-	"github.com/giraffe-org/backend/service"
+	"github.com/jphacks/TK_2310_1/handler"
+	"github.com/jphacks/TK_2310_1/handler/auth/signup"
+	"github.com/jphacks/TK_2310_1/service"
 	"log"
 
 	"go.uber.org/dig"
 	"golang.org/x/xerrors"
 
-	APIServerApplication "github.com/giraffe-org/backend/application/apiserver"
-	DBRepository "github.com/giraffe-org/backend/repository/db"
+	APIServerApplication "github.com/jphacks/TK_2310_1/application/apiserver"
+	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 )
 
 func initRepository(c *dig.Container) error {
@@ -28,11 +28,19 @@ func initService(c *dig.Container) error {
 	if err != nil {
 		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
 	}
+	err = c.Provide(service.NewUserService)
+	if err != nil {
+		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
+	}
 	return nil
 }
 
 func initHandler(c *dig.Container) error {
 	err := c.Provide(handler.NewEventHandler)
+	if err != nil {
+		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
+	}
+	err = c.Provide(handler.NewUserHandler)
 	if err != nil {
 		return xerrors.Errorf("signup の DI に失敗しました: %w", err)
 	}

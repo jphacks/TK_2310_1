@@ -7,9 +7,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/giraffe-org/backend/entity"
-	FirebaseInfrastructure "github.com/giraffe-org/backend/infrastructure/firebase"
-	"github.com/giraffe-org/backend/lib"
+	"github.com/jphacks/TK_2310_1/entity"
+	FirebaseInfrastructure "github.com/jphacks/TK_2310_1/infrastructure/firebase"
+	"github.com/jphacks/TK_2310_1/lib"
 )
 
 func (s *signupImpl) Post(c echo.Context) error {

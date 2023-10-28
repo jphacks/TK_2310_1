@@ -1,6 +1,9 @@
 package entity
 
-import "database/sql/driver"
+import (
+	"database/sql/driver"
+	"fmt"
+)
 
 type ParticipationStatus string
 
@@ -13,7 +16,14 @@ const (
 // 参照: https://gorm.io/ja_JP/docs/data_types.html
 
 func (p *ParticipationStatus) Scan(value interface{}) error {
-	*p = ParticipationStatus(value.([]byte))
+	switch v := value.(type) {
+	case []byte:
+		*p = ParticipationStatus(v)
+	case string:
+		*p = ParticipationStatus(v)
+	default:
+		return fmt.Errorf("unsupported type: %T", v)
+	}
 	return nil
 }
 

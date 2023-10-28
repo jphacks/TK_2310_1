@@ -1,0 +1,13 @@
+syntax = "proto3";
+package api;
+
+option go_package = "/gen";
+
+
+import "validate/validate.proto";
+
+message PostEventIdCompleteRequest {
+  string proof_participants_image_url = 1 [(validate.rules).string.min_len = 1];
+  string proof_garbage_image_url = 2 [(validate.rules).string.min_len = 1];
+  string report = 3 [(validate.rules).string.min_len = 1];
+}
