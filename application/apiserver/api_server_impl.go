@@ -46,6 +46,7 @@ func (a *apiServerImpl) Start() {
 	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
 	a.e.GET("/event/search", a.eventHandler.GetSearch)
 	a.e.GET("/event/recommendation", a.eventHandler.GetEventRecommendation)
+	a.e.GET("/event/participation-history", a.eventHandler.GetEventParticipationHistory)
 	a.e.POST("/event/:id/start", a.eventHandler.PostStartID)
 	a.e.POST("/event/:id/complete", a.eventHandler.PostCompleteID)
 	a.e.POST("/event/:id/report", a.eventHandler.PostReportID)
