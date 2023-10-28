@@ -26,6 +26,7 @@ type IFEventHandler interface {
 	PostCompleteID(c echo.Context) error
 	GetEventIDParticipant(c echo.Context) error
 	GetEventRecommendation(c echo.Context) error
+	PostEventIDApplication(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -303,4 +304,53 @@ func (e *EventHandler) GetEventRecommendation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, events)
+}
+
+func (e *EventHandler) PostEventIDApplication(c echo.Context) error {
+
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	application := &entity.Application{
+		UserID:  token.UID,
+		EventID: eventID,
+		Status:  entity.ParticipantUser,
+	}
+
+	//application := &entity.Application{
+	//	UserID:  "aaa",
+	//	EventID: "bbb",
+	//	Status:  entity.ParticipantUser,
+	//}
+
+	err = e.db.GetDB().Create(application).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, application)
 }

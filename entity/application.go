@@ -29,9 +29,8 @@ func (a ApplicationStatus) Value() (driver.Value, error) {
 }
 
 type Application struct {
-	ID        string            `gorm:"type:varchar(255);primaryKey"`
-	UserID    string            `gorm:"type:varchar(255);not null;references:users(id)"`
-	EventID   string            `gorm:"type:varchar(255);not null;references:events(id)"`
+	UserID    string            `gorm:"type:varchar(255);not null;references:users(id);primaryKey"`
+	EventID   string            `gorm:"type:varchar(255);not null;references:events(id);primaryKey"`
 	Status    ApplicationStatus `gorm:"type:application_status;not null;default:'participant'"`
 	CreatedAt time.Time         `gorm:"not null;default:current_timestamp"`
 	UpdatedAt time.Time         `gorm:"not null;default:current_timestamp"`

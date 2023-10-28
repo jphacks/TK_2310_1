@@ -44,6 +44,7 @@ func (a *apiServerImpl) Start() {
 	a.e.POST("/event/:id/complete", a.eventHandler.PostCompleteID)
 	a.e.GET("/event/recommendation", a.eventHandler.GetEventRecommendation)
 
-	// Start server
+	a.e.POST("/event/:id/application", a.eventHandler.PostEventIDApplication)
+
 	a.e.Logger.Fatal(a.e.Start(":8080"))
 }
