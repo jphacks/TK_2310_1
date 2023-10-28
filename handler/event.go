@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"github.com/giraffe-org/backend/api/gen"
 	"github.com/giraffe-org/backend/entity"
 	FirebaseInfrastructure "github.com/giraffe-org/backend/infrastructure/firebase"
 	"github.com/giraffe-org/backend/lib"
@@ -20,6 +21,8 @@ type IFEventHandler interface {
 	GetEventSchedule(c echo.Context) error
 	GetEventID(c echo.Context) error
 	GetSearch(c echo.Context) error
+	PostStartID(c echo.Context) error
+	PostCompleteID(c echo.Context) error
 }
 
 func NewEventHandler(db DBRepository.DB, service service.IFEventService) IFEventHandler {
@@ -159,4 +162,93 @@ func (e *EventHandler) GetSearch(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &events)
+}
+
+func (e *EventHandler) PostStartID(c echo.Context) error {
+	ctx := context.Background()
+	firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+	authClient, err := firebaseApp.Auth(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	token, err := authClient.VerifyIDToken(ctx, barerToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
+	}
+
+	eventID := c.Param("id")
+
+	intput := service.InputPostStartID{
+		Id:      token.UID,
+		EventID: eventID,
+	}
+	err = e.eventService.PostStartID(intput)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (e *EventHandler) PostCompleteID(c echo.Context) error {
+	/*
+		ctx := context.Background()
+		firebaseApp := FirebaseInfrastructure.GetFirebaseApp()
+		authClient, err := firebaseApp.Auth(ctx)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"message": err.Error(),
+			})
+		}
+
+		barerToken, err := lib.GetAuthorizationBarerTokenFromHeader(c.Request().Header)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"message": err.Error(),
+			})
+		}
+
+		token, err := authClient.VerifyIDToken(ctx, barerToken)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{
+				"message": err.Error(),
+			})
+		}
+
+		eventID := c.Param("id")
+
+	*/
+
+	var req gen.PostEventIdCompleteRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "requestのBindに失敗しました：", err)
+	}
+	if err := req.Validate(); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "requestが不正です：", err)
+	}
+
+	input := service.InputPostCompleteID{
+		Id:                        "a",                            //token.UID,
+		EventID:                   "2bC3dE4fG5hI6jK7lM8nO9pQ0rSB", //eventID,
+		ProofParticipantsImageUrl: req.ProofParticipantsImageUrl,
+		ProofGarbageImageUrl:      req.ProofGarbageImageUrl,
+		Report:                    req.Report,
+	}
+	err = e.eventService.PostCompleteID(input)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
 }

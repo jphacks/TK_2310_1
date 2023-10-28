@@ -39,6 +39,8 @@ func (a *apiServerImpl) Start() {
 
 	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
 	a.e.GET("/event/search", a.eventHandler.GetSearch)
+	a.e.POST("/event/:id/start", a.eventHandler.PostStartID)
+	a.e.POST("/event/:id/complete", a.eventHandler.PostCompleteID)
 
 	// Start server
 	a.e.Logger.Fatal(a.e.Start(":8080"))
