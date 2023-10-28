@@ -39,9 +39,9 @@ func (a *apiServerImpl) Start() {
 	auth.Use(middlewares.FirebaseAuth())
 
 	a.e.POST("/auth/signup", a.authSignupHandler.Post)
-	a.e.GET("/event/:id", a.eventHandler.GetEventID)
-	a.e.GET("/event/:id/participant", a.eventHandler.GetEventIDParticipant)
-	a.e.GET("/event/schedule", a.eventHandler.GetEventSchedule)
+	auth.GET("/event/:id", a.eventHandler.GetEventID)
+	auth.GET("/event/:id/participant", a.eventHandler.GetEventIDParticipant)
+	auth.GET("/event/schedule", a.eventHandler.GetEventSchedule)
 
 	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
 	a.e.GET("/event/search", a.eventHandler.GetSearch)
@@ -53,9 +53,10 @@ func (a *apiServerImpl) Start() {
 	a.e.GET("/event/:id/application", a.eventHandler.GetEventIDApplication)
 	a.e.POST("/event/:id/application", a.eventHandler.PostEventIDApplication)
 
-	a.e.GET("/user/:id/event", a.eventHandler.GetUserIDEvent)
+	auth.GET("/user/:id/event", a.eventHandler.GetUserIDEvent)
 
 	auth.GET("/user", a.userHandler.GetUserID)
+	auth.POST("/user/:id/event", a.userHandler.PostUsrIDEvent)
 
 	// Start server
 	a.e.Logger.Fatal(a.e.Start(":8080"))
