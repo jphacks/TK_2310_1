@@ -46,12 +46,10 @@ func (e *EventHandler) GetOrderRecommendation(c echo.Context) error {
 
 	address := c.QueryParam("address")
 	start := c.QueryParam("start_at")
-	end := c.QueryParam("complete_at")
 
 	input := service.InputOrderRecommendation{
 		Address: address,
 		StartAt: start,
-		EndAt:   end,
 	}
 	events := e.eventService.OrderRecommendation(ctx, input)
 
