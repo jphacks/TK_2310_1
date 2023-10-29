@@ -46,18 +46,16 @@ func (e *Event) OrderRecommendation(ctx context.Context, input InputOrderRecomme
 	client := e.db.GetDB()
 	var event []entity.Event
 	address := "%" + input.Address + "%"
-	layout := "2006-01-02 15:04:05"
-	t := lib.ParseTime(input.StartAt, layout)
-	endAt := lib.EndOfDay(t)
-	endAtStr := lib.TimeToString(endAt)
-	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", input.StartAt, endAtStr).Find(&event)
+	tm, _ := time.ParseInLocation("2006-01-02 15:04:05", input.StartAt, time.UTC)
+	endAt := lib.EndOfDay(tm)
+	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", tm, endAt).Find(&event)
+	log.Println(len(event))
 	if len(event) == 0 {
 		return OutOrderRecommendation{
 			Events:   event,
 			SumPrice: 0,
 		}
 	}
-	log.Println(event)
 	maxPrice, events := algo.Optimalplan(event)
 	result := OutOrderRecommendation{
 		Events:   events,
