@@ -6,8 +6,8 @@ var (
 	jst, _ = time.LoadLocation("Asia/Tokyo")
 )
 
-func ParseTime(str string) time.Time {
-	layout := "2006-01-02T15:04:05"
+func ParseTime(str, layout string) time.Time {
+
 	t, err := time.Parse(layout, str)
 	if err != nil {
 		panic(err)
