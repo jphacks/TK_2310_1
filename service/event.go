@@ -35,7 +35,6 @@ func NewEventService(db DBRepository.DB) IFEventService {
 type InputOrderRecommendation struct {
 	Address string
 	StartAt string
-	EndAt   string
 }
 
 type OutOrderRecommendation struct {
@@ -48,7 +47,10 @@ func (e *Event) OrderRecommendation(ctx context.Context, input InputOrderRecomme
 	var event []entity.Event
 	address := "%" + input.Address + "%"
 	log.Println(input.StartAt)
-	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", input.StartAt, input.EndAt).Find(&event)
+	t := lib.ParseTime(input.StartAt)
+	endAt := lib.EndOfDay(t)
+	endAtStr := lib.TimeToString(endAt)
+	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", input.StartAt, endAtStr).Find(&event)
 	if len(event) == 0 {
 		return OutOrderRecommendation{
 			Events:   event,

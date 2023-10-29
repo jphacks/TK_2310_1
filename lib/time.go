@@ -23,3 +23,7 @@ func Now() time.Time {
 func TimeToString(t time.Time) string {
 	return time.Time(t).Format("2006-01-02 15:04:05")
 }
+
+func EndOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
+}
