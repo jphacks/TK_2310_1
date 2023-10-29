@@ -105,7 +105,7 @@ func (e *Event) Search(ctx context.Context, input InputSearch) (*OutSearch, erro
 }
 
 func (e *Event) GetUserEventSchedule(uid string) ([]entity.Event, error) {
-	var upcomingEvents []entity.Event
+	upcomingEvents := []entity.Event{}
 
 	// 現在の日時を取得
 	currentTime := time.Now()
