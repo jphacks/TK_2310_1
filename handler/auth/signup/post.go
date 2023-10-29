@@ -41,6 +41,7 @@ func (s *signupImpl) Post(c echo.Context) error {
 	}
 	payload.ID = token.UID
 
+	log.Println(payload.ID)
 	err = s.db.Insert(payload)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{

@@ -5,6 +5,7 @@ import (
 	DBRepository "github.com/jphacks/TK_2310_1/repository/db"
 	"github.com/jphacks/TK_2310_1/service"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 )
 
@@ -27,6 +28,7 @@ type UserHandler struct {
 
 func (u *UserHandler) GetUserID(c echo.Context) error {
 	userId := c.Get("userId").(string)
+	log.Println(userId)
 	user := u.userService.GetUser(userId)
 
 	return c.JSON(http.StatusOK, user)
