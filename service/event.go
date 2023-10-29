@@ -46,8 +46,8 @@ func (e *Event) OrderRecommendation(ctx context.Context, input InputOrderRecomme
 	client := e.db.GetDB()
 	var event []entity.Event
 	address := "%" + input.Address + "%"
-	log.Println(input.StartAt)
-	t := lib.ParseTime(input.StartAt)
+	layout := "2006-01-02 15:04:05"
+	t := lib.ParseTime(input.StartAt, layout)
 	endAt := lib.EndOfDay(t)
 	endAtStr := lib.TimeToString(endAt)
 	client.Table("events").Select("*").Where("address LIKE ?", address).Where("will_start_at >= ? AND will_complete_at <= ?", input.StartAt, endAtStr).Find(&event)
