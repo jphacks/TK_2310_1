@@ -51,7 +51,7 @@ func (a *apiServerImpl) Start() {
 	auth.GET("/event/:id/participant", a.eventHandler.GetEventIDParticipant)
 	auth.GET("/event/schedule", a.eventHandler.GetEventSchedule)
 
-	auth.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
+	a.e.GET("/event/order-recommendation", a.eventHandler.GetOrderRecommendation)
 	auth.GET("/event/search", a.eventHandler.GetSearch)
 	auth.GET("/event/recommendation", a.eventHandler.GetEventRecommendation)
 	auth.GET("/event/participation-history", a.eventHandler.GetEventParticipationHistory)
